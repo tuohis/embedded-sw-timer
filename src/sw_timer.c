@@ -56,6 +56,12 @@ void sw_timer_init(const struct HWTimer* timer) {
         return;
     }
 
+    // Initialize timer structs
+    for (struct SwTimerContext* timer = _timers; timer < _timers + TIMER_N_TIMERS; ++timer) {
+        sw_timer_deallocate(timer);
+        timer->allocated = 0; // Init to zero instead of DEALLOCATED_PATTERN so that usage can be tracked
+    }
+
     hwTimerApi = timer;
 
     // Register interrupt handler
