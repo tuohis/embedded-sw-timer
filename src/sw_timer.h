@@ -17,8 +17,8 @@ typedef enum TimerMode { Once, Continuous } TimerMode;
 typedef VoidVoidFn TimerCallbackFn;
 
 typedef void (*InterruptHandlerRegistrationFn)(VoidVoidFn handler);
-typedef void (*SetNextExpireIntervalFn)(uint32_t useconds);
-typedef uint32_t (*GetElapsedUsFn)(void);
+typedef void (*SetNextExpireIntervalFn)(uint32_t time_units);
+typedef uint32_t (*GetElapsedTimeUnitsFn)(void);
 
 struct HWTimer {
     /**
@@ -28,7 +28,7 @@ struct HWTimer {
     InterruptHandlerRegistrationFn register_interrupt_handler;
 
     /**
-     * Schedule the HW timer's next expiration to `useconds` microseconds away. It
+     * Schedule the HW timer's next expiration to `time_units` Time Units away. It
      * is allowed for it to expire sooner, too, if its period isn't long enough.
      */
     SetNextExpireIntervalFn set_next_expire_interval;
@@ -44,9 +44,9 @@ struct HWTimer {
     VoidVoidFn stop;
 
     /**
-     * Get elapsed microseconds since previous invocation.
+     * Get elapsed Time Units since previous invocation.
      */
-    GetElapsedUsFn get_elapsed;
+    GetElapsedTimeUnitsFn get_elapsed;
 };
 
 /**
@@ -63,21 +63,22 @@ struct SwTimerContext* sw_timer_allocate(void);
  * Start a timer with the selected mode and target count. If callback_fn is defined, it's called
  * in an interrupt handler after reaching the target count.
  *
- * @param mode the timer mode (Once or Continuous)
- * @param period_us the timer period in microseconds
- * @param callback_fn a function pointer which is called after timer reaches period_us.
- *        NOTE: as this is called in an interrupt context it should be MINIMAL, i.e. just setting a flag
- *        or similar.
+ * @param timer       A pointer to the timer context struct
+ * @param mode        The timer mode (Once or Continuous)
+ * @param period      The timer period in Units
+ * @param callback_fn A function pointer which is called after timer reaches `period`.
+ *                    NOTE: as this is called in an interrupt context it should be MINIMAL,
+ *                    i.e. just setting a flag or similar.
  */
-void sw_timer_start(struct SwTimerContext* timer, TimerMode mode, uint32_t period_us, TimerCallbackFn callback_fn);
+void sw_timer_start(struct SwTimerContext* timer, TimerMode mode, uint32_t period, TimerCallbackFn callback_fn);
 
 /**
- * Get the elapsed microseconds of a timer which is running or stopped. All unknown IDs return zero.
+ * Get the elapsed Time Units of a timer which is running or stopped.
  */
 uint32_t sw_timer_get_value(const struct SwTimerContext* timer);
 
 /**
- * Stop a timer. Providing an unknown TimerId does nothing. Returns the timer's elapsed microseconds.
+ * Stop a timer. Returns the timer's elapsed Time Units.
  */
 uint32_t sw_timer_stop(struct SwTimerContext* timer);
 

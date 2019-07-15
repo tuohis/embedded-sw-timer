@@ -49,7 +49,7 @@ void callback2(void) {
 
 START_TEST(test_timer_operation)
 {
-    sw_timer_init(hwtimer_get());
+    sw_timer_init(hwtimer_get()); // Note: arbitrary Time Units are microseconds here
 
     struct SwTimerContext* timerOnce = sw_timer_allocate();
     struct SwTimerContext* timerContinuous = sw_timer_allocate();
