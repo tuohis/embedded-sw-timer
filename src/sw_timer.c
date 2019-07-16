@@ -122,6 +122,7 @@ uint32_t sw_timer_stop(struct SwTimerContext* timer) {
             }
         }
     }
+    return sw_timer_get_value(timer);
 }
 
 uint32_t sw_timer_get_value(const struct SwTimerContext* timer) {
