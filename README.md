@@ -124,5 +124,5 @@ source .bashrc
 buildenv-init
 
 # use the image to build and run the tests
-buildenv ./scripts/build.sh && build/tests/timer_test
+buildenv bash -c "./scripts/build.sh && build/tests/timer_test"
 ```
