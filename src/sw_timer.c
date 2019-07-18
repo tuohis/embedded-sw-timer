@@ -33,10 +33,10 @@ struct SwTimerContext {
 };
 
 // A counter of how many SW timers are running; easy to turn the HW timer off when reaches zero.
-uint8_t running_count = 0;
+volatile uint8_t running_count = 0;
 
 // This stores the actual timer structs
-struct SwTimerContext _timers[TIMER_N_TIMERS];
+volatile struct SwTimerContext _timers[TIMER_N_TIMERS];
 
 // This stores the HW timer interface
 const struct HWTimer* hwTimerApi = NULL;
@@ -57,7 +57,7 @@ void sw_timer_init(const struct HWTimer* timer) {
     }
 
     // Initialize timer structs
-    for (struct SwTimerContext* timer = _timers; timer < _timers + TIMER_N_TIMERS; ++timer) {
+    for (struct SwTimerContext* timer = (struct SwTimerContext*)_timers; timer < _timers + TIMER_N_TIMERS; ++timer) {
         sw_timer_deallocate(timer);
         timer->allocated = 0; // Init to zero instead of DEALLOCATED_PATTERN so that usage can be tracked
     }
@@ -70,12 +70,12 @@ void sw_timer_init(const struct HWTimer* timer) {
 
 struct SwTimerContext* sw_timer_allocate(void) {
     // Go through the timers and return the first non-allocated one
-    struct SwTimerContext* timer = _timers;
+    volatile struct SwTimerContext* timer = _timers;
     while (timer < _timers + TIMER_N_TIMERS) {
         if (timer->allocated != ALLOCATED_PATTERN) {
             // Not yet allocated -> mark as allocated and use it
             timer->allocated = ALLOCATED_PATTERN;
-            return timer;
+            return (struct SwTimerContext*)timer;
         }
         timer++;
     }
@@ -140,7 +140,7 @@ void _advance_timers(void) {
     uint32_t elapsed = hwTimerApi->get_elapsed();
     uint8_t handled_count = 0;
 
-    for (struct SwTimerContext* timer = _timers; handled_count < running_count && timer < _timers + TIMER_N_TIMERS; ++timer) {
+    for (volatile struct SwTimerContext* timer = _timers; handled_count < running_count && timer < _timers + TIMER_N_TIMERS; ++timer) {
 
         if (timer->allocated == ALLOCATED_PATTERN && timer->running) {
             // Avoid overflow by subtracting instead of adding
@@ -181,7 +181,7 @@ uint32_t _get_shortest_remaining_interval(void) {
 
     uint32_t value = UINT32_MAX;
     uint8_t handled_count = 0;
-    for (struct SwTimerContext* timer = _timers; handled_count < running_count && timer < _timers + TIMER_N_TIMERS; ++timer) {
+    for (volatile struct SwTimerContext* timer = _timers; handled_count < running_count && timer < _timers + TIMER_N_TIMERS; ++timer) {
         if (timer->allocated == ALLOCATED_PATTERN && timer->running) {
             if (timer->value < timer->period && timer->period - timer->value < value) {
                 value = timer->period - timer->value;
