@@ -111,7 +111,7 @@ void sw_timer_start(struct SwTimerContext* timer, TimerMode mode, uint32_t perio
     _set_expire_interval();
 }
 
-uint32_t sw_timer_stop(struct SwTimerContext* timer) {
+void sw_timer_stop(struct SwTimerContext* timer) {
     if (timer->running) {
         timer->running = false;
         if (running_count > 0) {
@@ -122,7 +122,6 @@ uint32_t sw_timer_stop(struct SwTimerContext* timer) {
             }
         }
     }
-    return sw_timer_get_value(timer);
 }
 
 uint32_t sw_timer_get_value(const struct SwTimerContext* timer) {

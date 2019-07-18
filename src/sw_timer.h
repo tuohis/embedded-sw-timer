@@ -78,9 +78,9 @@ void sw_timer_start(struct SwTimerContext* timer, TimerMode mode, uint32_t perio
 uint32_t sw_timer_get_value(const struct SwTimerContext* timer);
 
 /**
- * Stop a timer. Returns the timer's elapsed Time Units.
+ * Stop a timer.
  */
-uint32_t sw_timer_stop(struct SwTimerContext* timer);
+void sw_timer_stop(struct SwTimerContext* timer);
 
 /**
  * Deallocate a timer, i.e. release the resource so it can be allocated by someone else.
