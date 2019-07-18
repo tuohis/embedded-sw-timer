@@ -90,7 +90,7 @@ struct SwTimerContext* sw_timer_allocate(void) {
 }
 
 void sw_timer_deallocate(struct SwTimerContext* timer) {
-    timer->running = false;
+    sw_timer_stop(timer);
     timer->mode = Once;
     timer->value = 0;
     timer->period = 0;
@@ -165,8 +165,8 @@ void _advance_timers(void) {
                 // Timer expires
                 switch (timer->mode) {
                     case Once:
-                        timer->value = timer->period;
-                        timer->running = false;
+                        sw_timer_stop((struct SwTimerContext*)timer);
+                        timer->value = timer->period; // Make sure the value is exactly the period even if the interrupt was late
                         break;
 
                     case Continuous:
