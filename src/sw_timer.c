@@ -46,6 +46,13 @@ void _advance_timers(void);
 void _handle_expire_interrupt(void);
 void _set_expire_interval(void);
 
+// Locking
+static bool lock(void);
+static void unlock(void);
+static void request_interrupt_handler(void);
+static bool interrupt_handler_requested(void);
+static void clear_interrupt_handler_request(void);
+
 // ------------------------------------
 // Timer API
 // ------------------------------------
@@ -92,6 +99,8 @@ void sw_timer_deallocate(struct SwTimerContext* timer) {
 }
 
 void sw_timer_start(struct SwTimerContext* timer, TimerMode mode, uint32_t period_us, TimerCallbackFn callback_fn) {
+    while(!lock());
+
     if (!timer->running) {
         if (running_count == 0 && hwTimerApi->start != NULL) {
             hwTimerApi->start();
@@ -100,6 +109,7 @@ void sw_timer_start(struct SwTimerContext* timer, TimerMode mode, uint32_t perio
         ++running_count;
     }
 
+    clear_interrupt_handler_request();
     _advance_timers();
 
     timer->mode = mode;
@@ -109,6 +119,13 @@ void sw_timer_start(struct SwTimerContext* timer, TimerMode mode, uint32_t perio
     timer->running = true;
 
     _set_expire_interval();
+
+    unlock();
+
+    // This might happen if the interrupt is triggered just when starting a timer
+    if (interrupt_handler_requested()) {
+        _handle_expire_interrupt();
+    }
 }
 
 void sw_timer_stop(struct SwTimerContext* timer) {
@@ -199,6 +216,40 @@ void _set_expire_interval(void) {
 }
 
 void _handle_expire_interrupt(void) {
-    _advance_timers();
-    _set_expire_interval();
+    if (lock()) {
+        clear_interrupt_handler_request();
+        _advance_timers();
+        _set_expire_interval();
+        unlock();
+    }
+    else {
+        request_interrupt_handler();
+    }
+}
+
+// Locking
+
+static bool locked = false;
+
+static bool lock(void) {
+    if (!locked) {
+        locked = true;
+        return true;
+    }
+    return false;
+}
+
+static void unlock(void) {
+    locked = false;
+}
+
+static bool handler_requested = false;
+static void request_interrupt_handler(void) {
+    handler_requested = true;
+}
+static bool interrupt_handler_requested(void) {
+    return handler_requested;
+}
+static void clear_interrupt_handler_request(void) {
+    handler_requested = false;
 }
