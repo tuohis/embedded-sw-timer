@@ -155,9 +155,10 @@ void _advance_timers(void) {
     }
 
     uint32_t elapsed = hwTimerApi->get_elapsed();
+    uint8_t running_count_tmp = running_count; // Snapshot the value in case it changes during the operation due to it calling sw_timer_stop()
     uint8_t handled_count = 0;
 
-    for (volatile struct SwTimerContext* timer = _timers; handled_count < running_count && timer < _timers + TIMER_N_TIMERS; ++timer) {
+    for (volatile struct SwTimerContext* timer = _timers; handled_count < running_count_tmp && timer < _timers + TIMER_N_TIMERS; ++timer) {
 
         if (timer->allocated == ALLOCATED_PATTERN && timer->running) {
             // Avoid overflow by subtracting instead of adding
