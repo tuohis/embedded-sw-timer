@@ -16,7 +16,7 @@ set(TEST_SOURCES
   hwtimer_mock.c
 )
 
-add_executable(timer_test ${TEST_SOURCES})
-target_link_libraries(timer_test timer ${CHECK_LIBRARIES} -pthread  -pthread -lcheck_pic -lrt -lm)
+add_executable(sw_timer_test ${TEST_SOURCES})
+target_link_libraries(sw_timer_test sw_timer ${CHECK_LIBRARIES} -pthread  -pthread -lcheck_pic -lrt -lm)
 
-add_test(NAME timer_test COMMAND timer_test)
+add_test(NAME sw_timer_test COMMAND sw_timer_test)

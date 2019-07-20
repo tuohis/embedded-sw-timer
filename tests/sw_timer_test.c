@@ -146,7 +146,7 @@ Suite * timer_suite(void)
     TCase *tc_allocation;
     TCase *tc_operation;
 
-    s = suite_create("Timer");
+    s = suite_create("SW Timer");
 
     /* Allocation test case */
     tc_allocation = tcase_create("Allocation");

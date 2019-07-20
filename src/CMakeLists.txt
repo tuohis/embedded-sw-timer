@@ -7,9 +7,9 @@ set(HEADERS
   sw_timer.h
 )
 
-add_library(timer STATIC ${LIB_SOURCES} ${HEADERS})
+add_library(sw_timer STATIC ${LIB_SOURCES} ${HEADERS})
 
-install(TARGETS timer
+install(TARGETS sw_timer
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib)
 

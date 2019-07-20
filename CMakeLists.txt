@@ -75,6 +75,5 @@ add_subdirectory(src)
 ###############################################################################
 # Unit tests
 if(TESTING)
-  enable_testing()
   add_subdirectory(tests)
 endif()
